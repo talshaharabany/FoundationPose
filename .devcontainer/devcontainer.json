@@ -1,0 +1,72 @@
+{
+	"name": "FoundationPose Development",
+	"build": {
+		"dockerfile": "./Dockerfile",
+		"context": ".",
+		"args": {
+			"VARIANT": "3.10"
+		}
+	},
+	"privileged": true,
+	"remoteUser": "root",
+	"settings": {
+		"terminal.integrated.defaultProfile.linux": "bash",
+		"python.defaultInterpreterPath": "/usr/bin/python3"
+	},
+	"networkMode": "host",
+	"postCreateCommand": [
+		"source /opt/ros/humble/setup.bash && echo 'ROS 2 environment sourced'",
+		"cd /workspace/FoundationPose/mycpp && mkdir -p build && cd build && cmake .. -DPYTHON_EXECUTABLE=$(which python3) && make -j11",
+		"cd /workspace/FoundationPose/bundlesdf/mycuda && rm -rf build *egg* && pip3 install -e .",
+		"pip3 install -r /workspace/FoundationPose/requirements.txt --no-deps"
+	],
+	"containerEnv": {
+		"DISPLAY": "${localEnv:DISPLAY}",
+		"ROS_DOMAIN_ID": "71",
+		"MTB_CYCLONEDDS_CONFIG_PATH": "dds/local",
+		"MTB_GENERIC_CONFIG_PATH" : "/home/menteebot/workspace/mentee/config",
+		"CYCLONEDDS_URI": "/home/menteebot/workspace/mentee/config/dds/local/humble_cyclonedds_config.xml",
+		"SSH_AUTH_SOCK": "/ssh-agent"
+	},
+	"mounts": [
+		"source=/home/menteebot/FoundationPose,target=/workspace/FoundationPose,type=bind",
+		"source=/home/menteebot/workspace,target=/home/menteebot/workspace,type=bind",
+	],
+	"features": {
+		"ghcr.io/devcontainers/features/docker-in-docker:2": {
+			"version": "latest",
+			"enableNonRootDocker": "true",
+			"moby": "true"
+		}
+	},
+	"runArgs": [
+		"--runtime=nvidia",
+		"--cap-add=SYS_PTRACE",
+		"--security-opt=seccomp:unconfined",
+		"--security-opt=apparmor:unconfined",
+		"--gpus=all",
+		"--ipc=host",
+		"--shm-size=2g",
+		"--cpus=8",
+		"--memory=16g",
+		"--ulimit=memlock=-1",
+		"--volume=/tmp/.X11-unix:/tmp/.X11-unix",
+		"--ulimit=stack=67108864"
+	],
+	"extensions": [
+		"ms-python.python",
+		"ms-toolsai.jupyter",
+		"DotJoshJohnson.xml",
+		"ms-azuretools.vscode-docker",
+		"ms-vscode.cpptools",
+		"redhat.vscode-yaml",
+		"smilerobotics.urdf",
+		"streetsidesoftware.code-spell-checker",
+		"twxs.cmake",
+		"yzhang.markdown-all-in-one",
+		"zachflower.uncrustify",
+		"betwo.b2-catkin-tools",
+		"mhutchie.git-graph",
+		"ms-iot.vscode-ros"
+	]
+}
